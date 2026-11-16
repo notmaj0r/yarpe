@@ -1,8 +1,8 @@
 import struct
 from structure import Structure
 from sc import sc
-from utils.conversion import u64_to_i64
-from utils.rp import log
+from utils_conversion import u64_to_i64
+from utils_rp import log
 from constants import SYSCALL
 
 DEBUG = False

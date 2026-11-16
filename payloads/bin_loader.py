@@ -2,18 +2,18 @@ import math
 import struct
 from structure import Structure
 from sc import sc
-from utils.conversion import u64_to_i64
-from utils.etc import alloc
-from utils.ref import get_ref_addr
-from utils.rp import log
-from utils.tcp import (
+from utils_conversion import u64_to_i64
+from utils_etc import alloc
+from utils_ref import get_ref_addr
+from utils_rp import log
+from utils_tcp import (
     accept_client,
     close_socket,
     create_tcp_server,
     get_socket_name,
     read_all_from_socket,
 )
-from utils.unsafe import readbuf, readuint, writebuf
+from utils_unsafe import readbuf, readuint, writebuf
 from constants import SYSCALL, LIBC_OFFSETS, SHARED_VARS
 
 

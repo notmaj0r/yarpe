@@ -4,12 +4,12 @@ import json
 from offsets import GADGET_OFFSETS, LIBC_OFFSETS, EXEC_OFFSETS
 
 VERSION = ""
-with open(renpy.config.savedir + "/yarpe/version.txt", "r") as f:
+with open(renpy.config.savedir + "/version.txt", "r") as f:
     VERSION = f.read().strip()
 
-FONT_PATH = renpy.config.savedir + "/yarpe/debug_mono.ttf"
+FONT_PATH = renpy.config.savedir + "/debug_mono.ttf"
 
-with open(renpy.config.savedir + "/yarpe/config.json", "r") as f:
+with open(renpy.config.savedir + "/config.json", "r") as f:
     CONFIG = json.load(f)
 
 CONSOLE_KIND = os.getenv("CONSOLE_KIND", None)

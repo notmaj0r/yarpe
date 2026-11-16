@@ -6,19 +6,19 @@ from pygame_sdl2 import CONTROLLER_BUTTON_A
 from constants import CONSOLE_KIND, SHARED_VARS, SYSCALL
 from offsets import LIBC_OFFSETS
 from sc import sc
-from utils.conversion import u64_to_i64
-from utils.etc import alloc
-from utils.ref import get_ref_addr
+from utils_conversion import u64_to_i64
+from utils_etc import alloc
+from utils_ref import get_ref_addr
 from structure import Structure
-from utils.rp import log, log_exc
-from utils.tcp import (
+from utils_rp import log, log_exc
+from utils_tcp import (
     accept_client,
     close_socket,
     create_tcp_server,
     get_socket_name,
     read_all_from_socket,
 )
-from utils.unsafe import readbuf, writebuf
+from utils_unsafe import readbuf, writebuf
 
 # Port of https://github.com/shahrilnet/remote_lua_loader/blob/main/payloads/elf_loader.lua
 
@@ -428,16 +428,16 @@ def main():
 
     payload_data = b""
 
-    if os.path.exists("/saves/yarpe/elfldr-ps5.elf") and not FORCE_SOCKET:
-        log("Found elfldr-ps5.elf in /saves/yarpe/. Loading from save...")
+    if os.path.exists("/saves/elfldr-ps5.elf") and not FORCE_SOCKET:
+        log("Found elfldr-ps5.elf in save data. Loading from save...")
         log(
             "You can force network transfer by holding X button when launching the payload."
         )
-        with open("/saves/yarpe/elfldr-ps5.elf", "rb") as f:
+        with open("/saves/elfldr-ps5.elf", "rb") as f:
             payload_data = f.read()
     else:
         log(
-            "elfldr-ps5.elf not found in /saves/yarpe/ or X button pressed... Will wait for network transfer."
+            "elfldr-ps5.elf not found in save data or X button pressed... Will wait for network transfer."
         )
 
         s, _ = create_tcp_server(PORT)

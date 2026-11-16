@@ -2,68 +2,20 @@ import pickle
 import zlib
 import renpy
 import time
-from utils.rp import log
-from utils.conversion import u64_to_i64
-from errors.socket import SocketError
+import sys
+
+sys.path.insert(0, "/saves")
+
+from persistent_trigger import Yummy
+
+from utils_rp import log
+from utils_conversion import u64_to_i64
+from errors_socket import SocketError
 from sc import sc
 from constants import SYSCALL
 
 PERSISTENT_PATH = "/saves/persistent"
-DELAY_TIME = 10 # 10 Seconds
-
-SCRIPT = """
-import os
-import sys
-import traceback
-
-# Add YARPE folder to Python path
-sys.path.insert(0, "/saves/yarpe")
-
-class YarpeState(object):
-    def __init__(self):
-        self.logs = []
-        self.game_initialized = False
-
-renpy.store.yarpe_state = YarpeState()
-ys = renpy.store.yarpe_state
-
-# ---------------------------------------------------------
-# Logging
-# ---------------------------------------------------------
-
-def ylog(msg):
-    ys.logs.append(msg)
-    if len(ys.logs) > 400:
-        del ys.logs[0:100]
-
-ylog("YARPE: Initialized from persistent bootstrap.")
-
-# ---------------------------------------------------------
-# Label Callback Logic
-# ---------------------------------------------------------
-
-def yarpe_label_callback(label, abnormal):
-    ylog("LABEL: %s (abnormal=%r)" % (label, abnormal))
-
-    if label == "splashscreen" and not ys.game_initialized:
-        ys.game_initialized = True
-        ylog("YARPE: Entered _call__enter_game_menu_0 → autoloading slot '1-1'.")
-
-        try:
-            renpy.load("1-1")
-        except Exception as e:
-            ylog("YARPE ERROR: renpy.load('1-1') failed: %r" % e)
-
-# Install callback
-renpy.config.label_callback = yarpe_label_callback
-ylog("YARPE: label_callback replaced with yarpe_label_callback.")
-
-"""
-
-
-class Yummy(object):
-    def __reduce__(self):
-        return renpy.python.py_exec, (SCRIPT,)
+DELAY_TIME = 10
 
 SYSCALL["getpid"] = 20
 SYSCALL["kill"] = 37
@@ -100,22 +52,15 @@ def main():
     log("Also, the save needs to be located on slot 1-1(1-1-LT1.save).")
     log("Turn off the game now to cancel the process.")
 
-    # Give user some time to think about it.
     time.sleep(DELAY_TIME)
 
     p = renpy.game.persistent
 
-    # ---------------------------------------------------------
-    # Inject the Yummy trigger
-    # ---------------------------------------------------------
     log("Injecting YARPE trigger into persistent object...")
 
     p.yarpe_trigger = Yummy()
-    p._changed["yarpe_trigger"] = True   # Forces Ren'Py to rewrite persistent safely
+    p._changed["yarpe_trigger"] = True
 
-    # ---------------------------------------------------------
-    # Re-pickle persistent (protocol 2) and recompress
-    # ---------------------------------------------------------
     log("Serializing modified persistent...")
 
     try:
@@ -132,9 +77,6 @@ def main():
 
     log("Compressed persistent size: %d bytes" % len(compressed_data))
 
-    # ---------------------------------------------------------
-    # Write persistent back to disk
-    # ---------------------------------------------------------
     log("Writing modified persistent to disk at %s..." % PERSISTENT_PATH)
 
     try:

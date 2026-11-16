@@ -1,8 +1,8 @@
 import struct
-from utils.ref import get_ref_addr, refbytes
-from utils.etc import alloc, addrof, bytes
-from utils.unsafe import fakeobj
-from utils.pack import p64a
+from utils_ref import get_ref_addr, refbytes
+from utils_etc import alloc, addrof, bytes
+from utils_unsafe import fakeobj
+from utils_pack import p64a
 from constants import nogc
 
 

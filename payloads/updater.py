@@ -4,10 +4,10 @@ import re
 import os
 import struct
 
-from utils.conversion import u64_to_i64
-from utils.etc import alloc
-from utils.rp import log
-from errors.socket import SocketError
+from utils_conversion import u64_to_i64
+from utils_etc import alloc
+from utils_rp import log
+from errors_socket import SocketError
 from sc import sc
 from constants import SYSCALL
 

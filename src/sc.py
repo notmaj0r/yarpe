@@ -1,10 +1,10 @@
 import struct
 from types import FunctionType
-from utils.unsafe import getmem, readuint, readbuf
-from utils.etc import addrof, alloc
-from utils.ref import refbytes
-from utils.rp import log
-from utils.conversion import get_cstring, u64_to_i64
+from utils_unsafe import getmem, readuint, readbuf
+from utils_etc import addrof, alloc
+from utils_ref import refbytes
+from utils_rp import log
+from utils_conversion import get_cstring, u64_to_i64
 from constants import (
     SELECTED_LIBC,
     SELECTED_EXEC,

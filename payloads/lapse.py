@@ -15,11 +15,11 @@ import struct
 import traceback
 import pygame_sdl2
 from pygame_sdl2 import CONTROLLER_BUTTON_A
-from utils.ref import get_ref_addr
-from utils.etc import alloc, bytes
-from utils.unsafe import readuint, readbuf, writebuf
-from utils.conversion import u64_to_i64, get_cstring
-from utils.rp import log, log_exc
+from utils_ref import get_ref_addr
+from utils_etc import alloc, bytes
+from utils_unsafe import readuint, readbuf, writebuf
+from utils_conversion import u64_to_i64, get_cstring
+from utils_rp import log, log_exc
 from sc import sc
 from ropchain import ROPChain, Executable
 from constants import SYSCALL, SELECTED_LIBC, nogc, SELECTED_GADGETS, SHARED_VARS

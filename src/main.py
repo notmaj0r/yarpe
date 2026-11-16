@@ -3,9 +3,9 @@ import time
 import os
 import pygame_sdl2
 from pygame_sdl2 import CONTROLLER_BUTTON_Y
-from utils.fs import file_exists, read_file_data
-from utils.rp import log, log_exc, payload_log
-from utils.tcp import (
+from utils_fs import file_exists, read_file_data
+from utils_rp import log, log_exc, payload_log
+from utils_tcp import (
     create_tcp_client,
     create_tcp_server,
     accept_client,
@@ -37,7 +37,7 @@ def poc():
     for i in range(8):
         AUTO_LOAD_PATHS.append("/mnt/usb%d/yarpe_autoload/autoload.txt" % i)
     AUTO_LOAD_PATHS.append("/data/yarpe_autoload/autoload.txt")
-    AUTO_LOAD_PATHS.append("/saves/yarpe_autoload/autoload.txt")
+    AUTO_LOAD_PATHS.append("/saves/autoload.txt")
 
     auto_load_path = None
     run_auto_load = True
@@ -46,10 +46,14 @@ def poc():
             auto_load_path = path
             break
 
-    c = pygame_sdl2.controller.Controller(0)
-    c.init()
-    run_auto_load = c.get_button(CONTROLLER_BUTTON_Y) == 0
-    c.quit()
+    # some games have no mapping for the pad, so skip the triangle check
+    try:
+        c = pygame_sdl2.controller.Controller(0)
+        c.init()
+        run_auto_load = c.get_button(CONTROLLER_BUTTON_Y) == 0
+        c.quit()
+    except Exception:
+        pass
 
     if run_auto_load and auto_load_path is not None:
         log("[*] Found autoload file at %s" % auto_load_path)
@@ -147,13 +151,9 @@ def poc():
     ip = sc.get_current_ip()
 
     if ip is None:
-        msg = "Listening on port %d for stage 2 payload..." % port
-        sc.send_notification(msg)
-        log(msg)
+        log("Listening on port %d..." % port)
     else:
-        msg = "Listening on %s:%d for stage 2 payload..." % (ip, port)
-        sc.send_notification(msg)
-        log(msg)
+        log("Listening on %s:%d..." % (ip, port))
     while True:
         log("Waiting for client connection...")
         client_sock = accept_client(s)

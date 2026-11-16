@@ -31,13 +31,16 @@ Yet another Ren'Py PlayStation exploit
 - A YEAR OF SPRINGS PS4 (CUSA30428, CUSA30429, CUSA30430, CUSA30431)
 - Arcade Spirits: The New Challengers PS4 (CUSA32096, CUSA32097)
 - Arcade Spirits: The New Challengers PS5 (PPSA06409, PPSA06410)
+- One Night Stand PS4 (CUSA15849)
+- One Night Stand PS5 (PPSA03030)
+- Blind Men PS4 (CUSA18484)
 
 ## How to use
 
 Thanks https://github.com/shahrilnet/remote_lua_loader/blob/main/SETUP.md for the base of this guide.
 
 ### "Pickling" the save data (Can be skipped if you download the pre-made save file from releases)
- - Run `python3 pack_savegame.py` to generate `save.zip`.
+ - Run `python3 pack_savegame.py <PS4|PS5>` to generate `save.zip`, picking which console kind the save is built for, e.g. `python3 pack_savegame.py PS4`.
     - You can either use `updater.py` or Apollo Save Tool to apply the save data.
 
 ### Pack into single save file (Optional if you cannot copy all files)
@@ -132,57 +135,57 @@ Thanks https://github.com/shahrilnet/remote_lua_loader/blob/main/SETUP.md for th
 
 ## Python API
 
-- `utils`: Various utility modules
-    - `utils.ref`: Functions to get references to bytes/bytearray objects.
-        - `utils.ref.refbytes(data)`: Returns a pointer to the content of bytes object `data` that can then be passed to functions.
-        - `utils.ref.refbytearray(data)`: Returns a pointer to the content of bytearray object `data` that can then be passed to functions.
-        - `utils.ref.get_ref_addr(data)`: Returns the address of the content of bytes/bytearray/str/Structure object `data`.
-    - `utils.pack`: Functions to pack/unpack data.
-        - `utils.pack.p64(value_list)`: Packs `value_list` as 8-byte little-endian bytes.
-        - `utils.pack.p64a(*value)`: Packs `value` as 8-byte little-endian bytes.
-        - `utils.pack.p32(value_list)`: Packs `value_list` as 4-byte little-endian bytes.
-        - `utils.pack.p32a(*value)`: Packs `value` as 4-byte little-endian bytes.
-        - `utils.pack.p16(value_list)`: Packs `value_list` as 2-byte little-endian bytes.
-        - `utils.pack.p16a(*value)`: Packs `value` as 2-byte little-endian bytes.
-        - `utils.pack.unpack(data)`: Unpacks 8-byte little-endian bytes `data` to integer.
-    - `utils.conversion`: Functions to convert between different data types.
-        - `utils.conversion.u64(value)`: Converts `value` to unsigned 64-bit integer.
-        - `utils.conversion.u64_to_i64(value)`: Converts unsigned 64-bit integer `value` to signed 64-bit integer.
-        - `utils.conversion.u32_to_i32(value)`: Converts unsigned 32-bit integer `value` to signed 32-bit integer.
-        - `utils.conversion.get_cstring(data)`: Gets the C-style null-terminated string from `data`.
-    - `utils.etc`: Miscellaneous utility functions.
-        - `utils.etc.sizeof(data)`: Returns the size of bytes/bytearray/Structure object `data`.
-        - `utils.etc.flat(list_of_data)`: Flattens a list of objects into a single list.
-        - `utils.etc.addrof(data)`: Returns the address of the object `data`.
-        - `utils.etc.to_hex(data)`: Converts `data` to a hex string.
-        - `utils.etc.alloc(size)`: Allocates `size` bytes in the game's memory and returns the bytearray.
-        - `utils.etc.bytes(arr)`: Converts a list of integers `arr` to bytes object.
-    - `utils.unsafe`: Unsafe memory access functions.
-        - `utils.unsafe.readbuf(addr, length)`: Reads `length` bytes from `addr`.
-        - `utils.unsafe.writebuf(addr, data)`: Writes `data` to `addr`.
-        - `utils.unsafe.readuint(addr, size)`: Reads an unsigned integer of `size` bytes from `addr`.
-        - `utils.unsafe.writeuint(addr, value, size)`: Writes unsigned integer `value` of `size` bytes to `addr`.
-        - `utils.unsafe.fakeobj(addr)`: Returns a fake python object at `addr`.
-    - `utils.rp`: Logging to screen using Ren'Py functions.
-        - `utils.rp.log(*args)`: Logs `args` to screen.
-        - `utils.rp.log_exc(string)`: Logs the `string` as an exception to screen.
-    - `utils.tcp`: TCP socket functions.
-        - `utils.tcp.ip_to_int(ip_string)`: Converts `ip_string` to integer.
-        - `utils.tcp.htonl(value)`: Converts `value` to network byte order.
-        - `utils.tcp.create_tcp_socket()`: Creates a TCP socket and returns its file descriptor.
-        - `utils.tcp.get_socket_name(socket_fd)`: Gets the socket ip and port of `socket_fd`.
-        - `utils.tcp.create_tcp_server(port, ip='0.0.0.0')`: Creates a TCP server listening on `ip:port` and returns its file descriptor and sockaddr_in struct.
-        - `utils.tcp.create_tcp_client(ip, port)`: Creates a TCP client connected to `ip:port` and returns its file descriptor.
-        - `utils.tcp.accept_client(socket_fd)`: Accepts a client connection on `socket_fd` and returns the client socket fd and sockaddr_in struct.
-        - `utils.tcp.read_from_socket(socket_fd, size=4096)`: Reads up to `size` bytes from `socket_fd` and returns the data.
-        - `utils.tcp.read_all_from_socket(socket_fd)`: Reads all available data from `socket_fd` until no more data is available and returns the data.
-        - `utils.tcp.write_to_socket(socket_fd, data)`: Writes `data` to `socket_fd`.
-        - `utils.tcp.close_socket(socket_fd)`: Closes the socket `socket_fd`.
-    - `utils.fs`: File system functions.
-        - `utils.fs.stat_file(path)`: Gets the [stat struct](https://github.com/freebsd/freebsd-src/blob/b0973980cd24ba188c83fbba2410ddb8ed6546e2/sys/sys/stat.h#L122) of the file at `path`.
-        - `utils.fs.file_exists(path)`: Returns whether the file at `path` exists.
-        - `utils.fs.read_file_data(path)`: Reads the file at `path` and returns its data.
-        - `utils.fs.write_file_data(path, data)`: Writes `data` to the file at `path`.
+- Flat utility modules
+    - `utils_ref`: Functions to get references to bytes/bytearray objects.
+        - `utils_ref.refbytes(data)`: Returns a pointer to the content of bytes object `data` that can then be passed to functions.
+        - `utils_ref.refbytearray(data)`: Returns a pointer to the content of bytearray object `data` that can then be passed to functions.
+        - `utils_ref.get_ref_addr(data)`: Returns the address of the content of bytes/bytearray/str/Structure object `data`.
+    - `utils_pack`: Functions to pack/unpack data.
+        - `utils_pack.p64(value_list)`: Packs `value_list` as 8-byte little-endian bytes.
+        - `utils_pack.p64a(*value)`: Packs `value` as 8-byte little-endian bytes.
+        - `utils_pack.p32(value_list)`: Packs `value_list` as 4-byte little-endian bytes.
+        - `utils_pack.p32a(*value)`: Packs `value` as 4-byte little-endian bytes.
+        - `utils_pack.p16(value_list)`: Packs `value_list` as 2-byte little-endian bytes.
+        - `utils_pack.p16a(*value)`: Packs `value` as 2-byte little-endian bytes.
+        - `utils_pack.unpack(data)`: Unpacks 8-byte little-endian bytes `data` to integer.
+    - `utils_conversion`: Functions to convert between different data types.
+        - `utils_conversion.u64(value)`: Converts `value` to unsigned 64-bit integer.
+        - `utils_conversion.u64_to_i64(value)`: Converts unsigned 64-bit integer `value` to signed 64-bit integer.
+        - `utils_conversion.u32_to_i32(value)`: Converts unsigned 32-bit integer `value` to signed 32-bit integer.
+        - `utils_conversion.get_cstring(data)`: Gets the C-style null-terminated string from `data`.
+    - `utils_etc`: Miscellaneous utility functions.
+        - `utils_etc.sizeof(data)`: Returns the size of bytes/bytearray/Structure object `data`.
+        - `utils_etc.flat(list_of_data)`: Flattens a list of objects into a single list.
+        - `utils_etc.addrof(data)`: Returns the address of the object `data`.
+        - `utils_etc.to_hex(data)`: Converts `data` to a hex string.
+        - `utils_etc.alloc(size)`: Allocates `size` bytes in the game's memory and returns the bytearray.
+        - `utils_etc.bytes(arr)`: Converts a list of integers `arr` to bytes object.
+    - `utils_unsafe`: Unsafe memory access functions.
+        - `utils_unsafe.readbuf(addr, length)`: Reads `length` bytes from `addr`.
+        - `utils_unsafe.writebuf(addr, data)`: Writes `data` to `addr`.
+        - `utils_unsafe.readuint(addr, size)`: Reads an unsigned integer of `size` bytes from `addr`.
+        - `utils_unsafe.writeuint(addr, value, size)`: Writes unsigned integer `value` of `size` bytes to `addr`.
+        - `utils_unsafe.fakeobj(addr)`: Returns a fake python object at `addr`.
+    - `utils_rp`: Logging to screen using Ren'Py functions.
+        - `utils_rp.log(*args)`: Logs `args` to screen.
+        - `utils_rp.log_exc(string)`: Logs the `string` as an exception to screen.
+    - `utils_tcp`: TCP socket functions.
+        - `utils_tcp.ip_to_int(ip_string)`: Converts `ip_string` to integer.
+        - `utils_tcp.htonl(value)`: Converts `value` to network byte order.
+        - `utils_tcp.create_tcp_socket()`: Creates a TCP socket and returns its file descriptor.
+        - `utils_tcp.get_socket_name(socket_fd)`: Gets the socket ip and port of `socket_fd`.
+        - `utils_tcp.create_tcp_server(port, ip='0.0.0.0')`: Creates a TCP server listening on `ip:port` and returns its file descriptor and sockaddr_in struct.
+        - `utils_tcp.create_tcp_client(ip, port)`: Creates a TCP client connected to `ip:port` and returns its file descriptor.
+        - `utils_tcp.accept_client(socket_fd)`: Accepts a client connection on `socket_fd` and returns the client socket fd and sockaddr_in struct.
+        - `utils_tcp.read_from_socket(socket_fd, size=4096)`: Reads up to `size` bytes from `socket_fd` and returns the data.
+        - `utils_tcp.read_all_from_socket(socket_fd)`: Reads all available data from `socket_fd` until no more data is available and returns the data.
+        - `utils_tcp.write_to_socket(socket_fd, data)`: Writes `data` to `socket_fd`.
+        - `utils_tcp.close_socket(socket_fd)`: Closes the socket `socket_fd`.
+    - `utils_fs`: File system functions.
+        - `utils_fs.stat_file(path)`: Gets the [stat struct](https://github.com/freebsd/freebsd-src/blob/b0973980cd24ba188c83fbba2410ddb8ed6546e2/sys/sys/stat.h#L122) of the file at `path`.
+        - `utils_fs.file_exists(path)`: Returns whether the file at `path` exists.
+        - `utils_fs.read_file_data(path)`: Reads the file at `path` and returns its data.
+        - `utils_fs.write_file_data(path, data)`: Writes `data` to the file at `path`.
 - `sc.sc`: SploitCore instance
     - I will shorten `sc.sc` to `sc` for easier reading.
     - `sc.mem`: bytearray representing the game's memory.

@@ -1,8 +1,8 @@
 from ropchain import Executable
 from constants import SELECTED_EXEC, SELECTED_LIBC, SYSCALL
-from utils.etc import alloc
-from utils.ref import get_ref_addr, refbytearray
-from utils.conversion import get_cstring
+from utils_etc import alloc
+from utils_ref import get_ref_addr, refbytearray
+from utils_conversion import get_cstring
 
 
 class Function(Executable):
